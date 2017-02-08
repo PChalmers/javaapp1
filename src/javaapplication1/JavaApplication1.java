@@ -8,8 +8,11 @@ package javaapplication1;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,24 +20,36 @@ import java.sql.Statement;
  */
 public class JavaApplication1 {
 
-    static Connection conn = null;
+    private Connection conn = null;
+    private final String CONNECTIONSTRING = "jdbc:mysql://localhost/world?" + "user=root&password=";
+    private final String queryDB = "SELECT * FROM city WHERE Population > 1000000";
+
+    public JavaApplication1() {
+    }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
-        connect();
 
-        getData();
-
+        JavaApplication1 obj = new JavaApplication1();
+        obj.startstuff();
     }
 
-    private static void connect() {
+    private void startstuff() {
+        connectToDB();
+
+        getData();
+    }
+
+    private void connectToDB() {
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost/world?" + "user=root&password=");
+            conn = DriverManager.getConnection(CONNECTIONSTRING);
             // Do something with the Connection
             System.out.println("DB catelog name: " + conn.getCatalog());
+            
+            testDBExists();
+             
 
         } catch (SQLException ex) {
             // handle any errors
@@ -45,27 +60,47 @@ public class JavaApplication1 {
 
         System.out.println("Connection done ");
     }
+    
+    private void testDBExists() {
 
-    private static void getData() {
+        try {
+            // Connection connection = <your java.sql.Connection>
+            ResultSet resultSet = conn.getMetaData().getCatalogs();
+            
+            //iterate each catalog in the ResultSet
+            while (resultSet.next()) {
+                // Get the database name, which is at position 1
+                String databaseName = resultSet.getString(1);
+                System.out.println("DB name -> " + databaseName);
+            }
+            resultSet.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(JavaApplication1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void getData() {
         // assume that conn is an already created JDBC connection (see previous examples)
         Statement stmt = null;
         ResultSet rs = null;
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM city");
+            rs = stmt.executeQuery(queryDB);
 
             while (rs.next()) {
-                System.out.println("->" + rs.getString("Name") + " ->" + rs.getString("District"));
+
+                //from result set give metadata
+                ResultSetMetaData rsmd = rs.getMetaData();
+
+                //columns count from metadata object
+                int numOfCols = rsmd.getColumnCount();
+
+                System.out.println(rs.getRow() + ": ->" + rs.getString("Name") + " ->" + rs.getString("District"));
 
                 // Do whatever you want to do with these 2 values
             }
 
-            // or alternatively, if you don't know ahead of time that
-            // the query will be a SELECT...
-//            if (stmt.execute("SELECT * FROM configdata")) {
-//                rs = stmt.getResultSet();
-//            }
             // Now do something with the ResultSet ....
         } catch (SQLException ex) {
             // handle any errors
@@ -73,29 +108,25 @@ public class JavaApplication1 {
             System.out.println("SQLState: " + ex.getSQLState());
             System.out.println("VendorError: " + ex.getErrorCode());
         } finally {
-            // it is a good idea to release
-            // resources in a finally{} block
-            // in reverse-order of their creation
-            // if they are no-longer needed
-
+            // it is a good idea to release resources in a finally{} block
+            // in reverse-order of their creation if they are no-longer needed
             if (rs != null) {
                 try {
                     rs.close();
                 } catch (SQLException sqlEx) {
                 } // ignore
-
                 rs = null;
             }
-
             if (stmt != null) {
                 try {
                     stmt.close();
                 } catch (SQLException sqlEx) {
                 } // ignore
-
                 stmt = null;
             }
         }
-
     }
+
+
+
 }
