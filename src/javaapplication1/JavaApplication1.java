@@ -23,8 +23,10 @@ public class JavaApplication1 {
     private Connection conn = null;
     private final String CONNECTIONSTRING = "jdbc:mysql://localhost/world?" + "user=root&password=";
     private final String queryDB = "SELECT * FROM city WHERE Population > 1000000";
+    private ResultSet resultSet;
 
     public JavaApplication1() {
+        startstuff();
     }
 
     /**
@@ -39,7 +41,7 @@ public class JavaApplication1 {
     private void startstuff() {
         connectToDB();
 
-        getData();
+        getDBData();
     }
 
     private void connectToDB() {
@@ -65,7 +67,7 @@ public class JavaApplication1 {
 
         try {
             // Connection connection = <your java.sql.Connection>
-            ResultSet resultSet = conn.getMetaData().getCatalogs();
+            resultSet = conn.getMetaData().getCatalogs();
             
             //iterate each catalog in the ResultSet
             while (resultSet.next()) {
@@ -79,7 +81,19 @@ public class JavaApplication1 {
         }
     }
 
-    private void getData() {
+    public ResultSet getDBData() {
+
+        try {
+            // Connection connection = <your java.sql.Connection>
+            return conn.getMetaData().getCatalogs();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(JavaApplication1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+        
+    public ResultSet getData() {
         // assume that conn is an already created JDBC connection (see previous examples)
         Statement stmt = null;
         ResultSet rs = null;
@@ -88,18 +102,18 @@ public class JavaApplication1 {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(queryDB);
 
-            while (rs.next()) {
-
-                //from result set give metadata
-                ResultSetMetaData rsmd = rs.getMetaData();
-
-                //columns count from metadata object
-                int numOfCols = rsmd.getColumnCount();
-
-                System.out.println(rs.getRow() + ": ->" + rs.getString("Name") + " ->" + rs.getString("District"));
-
-                // Do whatever you want to do with these 2 values
-            }
+//            while (rs.next()) {
+//
+//                //from result set give metadata
+//                ResultSetMetaData rsmd = rs.getMetaData();
+//
+//                //columns count from metadata object
+//                int numOfCols = rsmd.getColumnCount();
+//
+//                System.out.println(rs.getRow() + ": ->" + rs.getString("Name") + " ->" + rs.getString("District"));
+//
+//                // Do whatever you want to do with these 2 values
+//            }
 
             // Now do something with the ResultSet ....
         } catch (SQLException ex) {
@@ -107,24 +121,8 @@ public class JavaApplication1 {
             System.out.println("SQLException: " + ex.getMessage());
             System.out.println("SQLState: " + ex.getSQLState());
             System.out.println("VendorError: " + ex.getErrorCode());
-        } finally {
-            // it is a good idea to release resources in a finally{} block
-            // in reverse-order of their creation if they are no-longer needed
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException sqlEx) {
-                } // ignore
-                rs = null;
-            }
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException sqlEx) {
-                } // ignore
-                stmt = null;
-            }
-        }
+        } 
+        return rs;
     }
 
 
