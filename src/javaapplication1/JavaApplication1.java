@@ -8,7 +8,6 @@ package javaapplication1;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -22,7 +21,8 @@ public class JavaApplication1 {
 
     private Connection conn = null;
     private final String CONNECTIONSTRING = "jdbc:mysql://localhost/world?" + "user=root&password=";
-    private final String queryDB = "SELECT * FROM city WHERE Population > 1000000";
+    private final String queryDB = "SELECT * FROM countrylanguage";
+    //private final String queryDB = "SELECT * FROM city WHERE Population > 1000000";
     private ResultSet resultSet;
 
     public JavaApplication1() {
@@ -93,28 +93,14 @@ public class JavaApplication1 {
         return null;
     }
         
-    public ResultSet getData() {
+    public ResultSet getData(String query) {
         // assume that conn is an already created JDBC connection (see previous examples)
         Statement stmt = null;
         ResultSet rs = null;
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery(queryDB);
-
-//            while (rs.next()) {
-//
-//                //from result set give metadata
-//                ResultSetMetaData rsmd = rs.getMetaData();
-//
-//                //columns count from metadata object
-//                int numOfCols = rsmd.getColumnCount();
-//
-//                System.out.println(rs.getRow() + ": ->" + rs.getString("Name") + " ->" + rs.getString("District"));
-//
-//                // Do whatever you want to do with these 2 values
-//            }
-
+            rs = stmt.executeQuery(query);
             // Now do something with the ResultSet ....
         } catch (SQLException ex) {
             // handle any errors
